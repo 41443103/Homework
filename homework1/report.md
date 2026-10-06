@@ -6,33 +6,124 @@
 
 本題要求用遞迴和非遞迴兩種方式計算Ackermann函數。
 
+Ackermann函數定義:
+
+$$
+A(m,n)=
+\begin{cases}
+n+1 & m=0\\
+A(m-1,1) & m>0,\ n=0\\
+A(m-1,A(m,n-1)) & otherwise\\
+\end{cases}
+$$
+
 ### 解題策略
+
 #### 遞迴
+1. 使用遞迴函式依照定義拆解成三個判斷式 $m=0$, $n=0$,和其餘狀況($m>0$ $and$ $n>0$)。
+2. 當 $m=0$時，返回 $n+1$ 作為遞迴的結束條件。
+3. 當 $n=0$ 與其餘，則前者呼叫 $A(m-1,1)$，後者呼叫巢狀 $A(m-1, A(m,n-1))$。
+4. 主程式輸入m和n並呼叫遞迴函式後，輸出計算結果。
 #### 非遞迴
-1. 使用遞迴函式將問題拆解為更小的子問題：
-   $$\Sigma(n) = n + \Sigma(n-1)$$
-2. 當 $n \leq 1$ 時，返回 $n$ 作為遞迴的結束條件。  
-3. 主程式呼叫遞迴函式，並輸出計算結果。
+1. 使用動態陣列模擬堆疊，避免造成溢位。
+2. 當空間不足時，將陣列空間乘2。
+3. 使用while迴圈取出堆疊頂端top的 $m$ 值，依判斷式進行條件判斷後執行。
+4. 遇到其餘情況的巢狀時，將依序放入堆疊。
+5. 主程式輸入m和n後，進迴圈計算結束後，釋放動態記憶體並輸出結果。
 
 ## 程式實作
 
 以下為主要程式碼：
-
+#### 遞迴
 ```cpp
-#include <iostream>
+#include<iostream>
 using namespace std;
-
-int sigma(int n) {
-    if (n < 0)
-        throw "n < 0";
-    else if (n <= 1)
-        return n;
-    return n + sigma(n - 1);
+long long A(long long m, long long n)
+{
+	if (m == 0)
+	{
+		return ++n;
+	}
+	else if (n == 0)
+	{
+		return A(m - 1, 1);
+	}
+	else
+	{
+		return A(m - 1, A(m, n - 1));
+	}
 }
-
-int main() {
-    int result = sigma(3);
-    cout << result << '\n';
+int main()
+{
+	long long m, n;
+	cin >> m >> n;
+	cout << A(m, n)<<endl;
+	return 0;
+}
+```
+#### 遞迴
+```cpp
+#include<iostream>
+using namespace std;
+long long N(long long m, long long n)
+{
+    long long a = 1024; //初始空間2^10
+    long long top = 0;
+    long long* s = new long long[a];
+    s[top] = m;
+    top++;
+    while (top > 0)
+    {
+        top--;
+        m= s[top];
+        if(m==0)
+        {
+            n++;
+        }
+        else if (n == 0)
+        {
+            if (top + 1 >= a) //空間不夠 *2
+            {
+                a *= 2;
+                long long* news = new long long[a];
+                for (long long i = 0; i < top; i++) {
+                    news[i] = s[i];
+                }
+                delete[] s;
+                s = news;
+            }
+            s[top] = m - 1;
+            top++;
+            n = 1;
+        }
+        else
+        {
+            if (top + 2 >= a) {
+                a *= 2;
+                long long* news = new long long[a];
+                for (long long i = 0; i < top; ++i) {
+                    news[i] = s[i];
+                }
+                delete[] s;
+                s = news;
+            }
+            //A(m-1,(m,n-1))
+            s[top] = m - 1;
+            top++;
+            s[top] = m;
+            top++;
+            n = n - 1;
+        }
+    }
+    delete[] s;
+    return n;
+}
+int main()
+{
+    long long m, n;
+    cin >> m >> n;
+    cout << N(m, n) << endl;
+    return 0;
 }
 ```
 
