@@ -129,8 +129,12 @@ int main()
 
 ## 效能分析
 
-1. 時間複雜度： $O(A(m, n))$。
-2. 空間複雜度： $O(A(m, n))$，非遞迴較不容易產生溢位。
+#### 遞迴
+1. 空間複雜度：當 m, n 較小時（ m=3, n=3），遞迴層數可控；當 m, n 較大時，遞迴層數會極速膨脹，導致 Stack Overflow。m≥4 時，空間複雜度超越 $O(2ⁿ)$   
+2. 時間複雜度：對於較小 m，姑且還能計算 ，但m=4後，複雜度超過指數級，遠大於 $O(2ⁿ)$ 。
+#### 遞迴
+1. 空間複雜度：m=3 時，空間複雜度 $O(n)$ ；m=4 時，空間複雜度 $O(2^n)$ ；m≥5 時，空間複雜度超越 O(2^(2^(...2^n)))（n層）
+2. 時間複雜度：對於 m=3，複雜度約 $O(2^n)$ ；m=4，複雜度約 O(2^(2^(...2^n))) （n 層）。實際上，計算 Ackermann(4, 2) 就需要幾億次操作。
 
 ## 測試與驗證
 
@@ -141,7 +145,7 @@ int main()
 | 測試一   | $m = 0$      | $n = 0$      | 1        | 1        | 1        |
 | 測試二   | $m = 1$      | $n = 1$      | 3        | 3        | 3        |
 | 測試三   | $m = 3$      | $n = 3$      | 61        | 61        | 61        |
-| 測試四   | $m = 4$      | $n = 2$      | $2^{65,536} - 3$ | 異常拋出  | 異常拋出  |
+| 測試四   | $m = 4$      | $n = 2$      | $2^{65,536} - 3$ | 異常輸出  | 異常輸出  |
 | 測試五   | $m = -1$     | $n = -1$     | 異常拋出 | 異常拋出 | 異常拋出  |
 
 ### 編譯與執行指令
@@ -202,7 +206,44 @@ $ .\main.exe
 以下為主要程式碼：
 #### 遞迴
 ```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+void powereset(string A[], string s[], int a, int n, int b)
+{    
+    if (a == n) 
+    {
+        cout << "{";
+        for (int j = 0; j < b; j++) 
+        {
+            cout << s[j];
+            if (j != b - 1) cout << ",";
+        }
+        cout << "}" << endl;
+        return ;
+    }
+    powereset(A, s, a + 1, n, b); // 不加當前 A[i]，處理下一個元素
+    s[b] = A[a]; // 加入當前A[i]到子集
+    powereset(A, s, a + 1, n, b + 1); // 處理下一個元素
+}
 
+int main() {
+    int n;
+    cout << "n:";
+    cin >> n;
+    string* A = new string[n];
+    string* s = new string[n];
+    cout << "集合元素 : ";
+    for (int i = 0; i < n; i++) 
+    {
+        cin >> A[i];
+    }
+    cout << "集合的冪集為:" << endl;
+    powereset(A, s, 0, n, 0);
+    delete[] A;
+    delete[] s;
+    return 0;
+}
 ```
 
 ## 效能分析
